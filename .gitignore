@@ -2,3 +2,6 @@
 **/confdir/**
 !**/confdir/.gitkeep
 !**/workdir/.gitkeep
+!AdGuardHome.yaml
+!config.ini
+!org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json
