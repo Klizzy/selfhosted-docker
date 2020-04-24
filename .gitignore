@@ -1,2 +1,4 @@
-**/workdir/.*
-**/confdir/.*
+**/workdir/**
+**/confdir/**
+!**/confdir/.gitkeep
+!**/workdir/.gitkeep

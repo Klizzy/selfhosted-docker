@@ -1,0 +1,15 @@
+version: "2"
+services:
+  tautulli:
+    image: linuxserver/tautulli
+    container_name: tautulli
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - ./confdir:/config
+      - /var/lib/plexmediaserver/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs/:ro
+    ports:
+      - 8181:8181
+    restart: unless-stopped

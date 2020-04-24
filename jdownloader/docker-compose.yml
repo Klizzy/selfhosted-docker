@@ -1,0 +1,9 @@
+version: '3'
+services:
+    jdownloader:
+        container_name: jdownloader
+        image: plusminus/jdownloader2-headless:latest
+        restart: on-failure
+        volumes:
+            - '/home/klizzy/Plex:/opt/JDownloader/Downloads'
+            - './confdir:/opt/JDownloader/cfg'
