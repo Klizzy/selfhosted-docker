@@ -5,3 +5,6 @@
 !AdGuardHome.yaml
 !config.ini
 !org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json
+!**/confdir/etc-pihole/.gitkeep
+!**/confdir/etc-dnsmasq.d/.gitkeep
+.idea
