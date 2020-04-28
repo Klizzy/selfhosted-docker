@@ -3,7 +3,7 @@ services:
     adguard-home:
         container_name: adguard-home
         image: adguard/adguardhome
-        restart: on-failure
+        #restart: unless-stopped
 
         volumes:
             - './workdir:/opt/adguardhome/work'

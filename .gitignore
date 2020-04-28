@@ -1,4 +1,4 @@
 **/workdir/**
 **/confdir/**
-!**/confdir/.gitkeep
-!**/workdir/.gitkeep
+.idea
+!.gitkeep
