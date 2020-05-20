@@ -2,3 +2,4 @@
 **/confdir/**
 .idea
 !.gitkeep
+*.env
