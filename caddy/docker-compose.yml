@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+    caddy:
+        image: library/caddy:2.0.0
+        container_name: caddy
+        restart: on-failure
+        ports:
+            - '8080:80'
+        volumes:
+            - './workdir:/data'
+            - './confdir:/config'
+            - './caddyfile:/etc/caddy/Caddyfile'
+            - './site:/usr/share/caddy'
