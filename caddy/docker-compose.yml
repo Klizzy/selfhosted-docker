@@ -3,7 +3,7 @@ services:
     caddy:
         image: library/caddy:2.0.0
         container_name: caddy
-        restart: on-failure
+        restart: unless-stopped
         ports:
             - '8080:80'
         volumes:

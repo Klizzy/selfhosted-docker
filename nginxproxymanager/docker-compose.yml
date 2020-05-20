@@ -3,6 +3,7 @@ services:
     app:
         image: 'jc21/nginx-proxy-manager:latest'
         container_name: nginx-manager
+        restart: unless-stopped
         ports:
             - '80:80'
             - '81:81'
@@ -14,6 +15,7 @@ services:
     db:
         image: 'jc21/mariadb-aria:10.4'
         container_name: nginx-manager-db
+        restart: unless-stopped
         env_file:
             - db.env
         volumes:
