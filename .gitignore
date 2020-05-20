@@ -1,7 +1,12 @@
 **/workdir/**
 **/confdir/**
 .idea
+<<<<<<< HEAD
 !AdGuardHome.yaml
 !config.ini
 !org.jdownloader.api.myjdownloader.MyJDownloaderSettings.json
 !.gitkeep
+=======
+!.gitkeep
+*.env
+>>>>>>> a2d79c615d00365b95881266e9af37b16d534567

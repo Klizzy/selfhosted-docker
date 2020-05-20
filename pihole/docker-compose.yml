@@ -6,7 +6,11 @@ services:
         ports:
             - '53:53/tcp'
             - '53:53/udp'
+<<<<<<< HEAD
             - '80:80'
+=======
+            - '8080:80'
+>>>>>>> a2d79c615d00365b95881266e9af37b16d534567
             - '443:443'
         environment:
             - TZ=Europe/Berlin
