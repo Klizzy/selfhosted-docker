@@ -1,0 +1,39 @@
+version: '3'
+services:
+    jdownloader-vpn:
+        container_name: jdownloader-vpn
+        image: plusminus/jdownloader2-headless:latest
+        restart: unless-stopped
+        network_mode: "service:vpn"
+        stdin_open: true
+        tty: true
+        depends_on:
+            - vpn
+        volumes:
+            - '/home/klizzy/Plex:/opt/JDownloader/Downloads'
+            - './confdir:/opt/JDownloader/cfg'
+    vpn:
+        container_name: vpn
+        image: dperson/openvpn-client
+        cap_add:
+            - net_admin
+        dns:
+            - 1.1.1.1
+        environment:
+            TZ: 'Europe/Berlin'
+        networks:
+            - default
+        read_only: true
+        tmpfs:
+            - /run
+            - /tmp
+        restart: unless-stopped
+        security_opt:
+            - label:disable
+        stdin_open: true
+        tty: true
+        volumes:
+            - /dev/net:/dev/net:z
+            - './vpn:/vpn'
+networks:
+    default:
