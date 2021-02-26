@@ -1,8 +1,8 @@
-version: '3'
+version: '3.7'
 services:
     jdownloader-vpn:
         container_name: jdownloader-vpn
-        image: plusminus/jdownloader2-headless:latest
+        image: plusminus/jdownloader2-headless:alpine
         restart: unless-stopped
         network_mode: "service:vpn"
         stdin_open: true
