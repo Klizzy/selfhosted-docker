@@ -11,10 +11,10 @@ services:
             - vpn
         volumes:
             - '/home/klizzy/Plex:/opt/JDownloader/Downloads'
-            - './confdir:/opt/JDownloader/cfg'
+            - './confdir/jd/:/opt/JDownloader/cfg'
     vpn:
         container_name: vpn
-        image: dperson/openvpn-client
+        image: dperson/openvpn-client:latest
         cap_add:
             - net_admin
         dns:
@@ -34,6 +34,6 @@ services:
         tty: true
         volumes:
             - /dev/net:/dev/net:z
-            - './vpn:/vpn'
+            - './confdir/vpn:/vpn'
 networks:
     default:
