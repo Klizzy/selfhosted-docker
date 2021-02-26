@@ -1,6 +1,5 @@
 **/workdir/**
 **/confdir/**
-**/vpn/**
 .idea
 !.gitkeep
 *.env
