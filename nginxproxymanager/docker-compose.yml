@@ -10,8 +10,8 @@ services:
             - '443:443'
         volumes:
             - ./confdir/config.json:/app/config/production.json
+            - ./confdir/letsencrypt:/etc/letsencrypt
             - ./workdir:/data
-            - ./letsencrypt:/etc/letsencrypt
     db:
         image: 'jc21/mariadb-aria:10.4'
         container_name: nginx-manager-db

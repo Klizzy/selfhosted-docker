@@ -10,8 +10,8 @@ services:
         depends_on:
             - vpn
         volumes:
-            - '/home/klizzy/Plex:/opt/JDownloader/Downloads'
-            - './confdir/jd/:/opt/JDownloader/cfg'
+            - "${DOWNLOAD_VOLUME_PATH}"
+            - "${JDL_CONF_VOLUME_PATH}"
     vpn:
         container_name: vpn
         image: dperson/openvpn-client:latest
@@ -34,6 +34,6 @@ services:
         tty: true
         volumes:
             - /dev/net:/dev/net:z
-            - './confdir/vpn:/vpn'
+            - "${VPN_CONF_VOLUME_PATH}"
 networks:
     default:
