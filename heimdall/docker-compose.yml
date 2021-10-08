@@ -1,0 +1,15 @@
+version: '3.3'
+services:
+    heimdall:
+        image: ghcr.io/linuxserver/heimdall
+        container_name: heimdall
+        environment:
+            - PUID=501
+            - PGID=501
+            - TZ=Europe/Berlin
+        volumes:
+            - './confdir:/config'
+        ports:
+            - 8080:80
+            - 4443:443
+        restart: unless-stopped
