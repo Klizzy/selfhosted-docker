@@ -1,0 +1,15 @@
+version: '2'
+services:
+    homebridge:
+        image: oznu/homebridge:2022-02-09-raspberry-pi
+        container_name: homebridge
+        restart: unless-stopped
+        network_mode: host
+        environment:
+            - TZ=Europe/Berlin
+            - PGID=1000
+            - PUID=1000
+            - HOMEBRIDGE_CONFIG_UI=1
+            - HOMEBRIDGE_CONFIG_UI_PORT=8581
+        volumes:
+            - ./confdir:/homebridge
