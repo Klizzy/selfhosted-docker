@@ -1,7 +1,7 @@
 version: '3'
 services:
     app:
-        image: 'jc21/nginx-proxy-manager:latest'
+        image: 'jc21/nginx-proxy-manager:2.9.22'
         container_name: nginx-manager
         restart: unless-stopped
         ports:
@@ -12,6 +12,10 @@ services:
             - ./confdir/config.json:/app/config/production.json
             - ./confdir/letsencrypt:/etc/letsencrypt
             - ./workdir:/data
+        healthcheck:
+            test: [ "CMD", "/bin/check-health" ]
+            interval: 10s
+            timeout: 3s
     db:
         image: 'jc21/mariadb-aria:10.4'
         container_name: nginx-manager-db
