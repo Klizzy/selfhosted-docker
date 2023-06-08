@@ -1,4 +1,4 @@
-# Selfhosted Docker
+# 🐳 Selfhosted Docker
 
 This repo contains all my running services within docker containers.
 It's basically a directory structure with docker-compose files, volumes and [watchtower](https://github.com/containrrr/watchtower). 
