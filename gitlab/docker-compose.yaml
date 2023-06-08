@@ -1,0 +1,70 @@
+version: '3.7'
+
+services:
+    gitlab:
+        image: 'gitlab/gitlab-ce:16.0.3-ce.0'
+        restart: unless-stopped
+        hostname: "${HOST_URL}"
+        container_name: gitlab-16.0.3
+        environment:
+            GITLAB_OMNIBUS_CONFIG: |
+                external_url = ${HOST_URL}
+                gitlab_rails['gitlab_shell_ssh_port'] = ${EXTERNAL_SSH_PORT}
+                nginx['listen_port'] = ${WEBSERVER_PORT}
+                nginx['listen_https'] = ${ENABLE_HTTPS}
+                grafana['disable_login_form'] = ${LOGIN_FORM}
+                grafana['admin_password'] = ${INITIAL_ADMIN_PW}
+        ports:
+            - "${WEBSERVER_PORT}:${WEBSERVER_PORT}"
+            - "${EXTERNAL_SSH_PORT}:22"
+        volumes:
+            - './confdir:/etc/gitlab'
+            - './workdir/logs:/var/log/gitlab'
+            - './workdir/data:/var/opt/gitlab'
+        networks:
+            - gitlab
+
+    gitlab-runner1:
+        image: gitlab/gitlab-runner:alpine
+        restart: unless-stopped
+        container_name: gitlab-runner-alpine-1
+        environment:
+            - TZ=${TIME_ZONE}
+            - TOKEN=${TOKEN}
+        depends_on:
+            - gitlab
+        volumes:
+            - './gitlab-runner1/config:/etc/gitlab-runner'
+            - '/var/run/docker.sock:/var/run/docker.sock'
+        networks:
+            - gitlab
+    gitlab-runner2:
+        image: gitlab/gitlab-runner:alpine
+        restart: unless-stopped
+        container_name: gitlab-runner-alpine-2
+        environment:
+            - TZ=${TIME_ZONE}
+            - TOKEN=${TOKEN}
+        depends_on:
+            - gitlab
+        volumes:
+            - './gitlab-runner2/config:/etc/gitlab-runner'
+            - '/var/run/docker.sock:/var/run/docker.sock'
+        networks:
+            - gitlab
+    gitlab-runner3:
+        image: gitlab/gitlab-runner:alpine
+        restart: unless-stopped
+        container_name: gitlab-runner-alpine-3
+        environment:
+            - TZ=${TIME_ZONE}
+            - TOKEN=${TOKEN}
+        depends_on:
+            - gitlab
+        volumes:
+            - './gitlab-runner3/config:/etc/gitlab-runner'
+            - '/var/run/docker.sock:/var/run/docker.sock'
+        networks:
+            - gitlab
+networks:
+    gitlab:
