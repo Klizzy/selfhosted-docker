@@ -32,6 +32,8 @@ services:
             - label:disable
         stdin_open: true
         tty: true
+        sysctls:
+            - net.ipv6.conf.all.disable_ipv6=0
         volumes:
             - /dev/net:/dev/net:z
             - "${VPN_CONF_VOLUME_PATH}"
