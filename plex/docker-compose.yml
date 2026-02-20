@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+    plex:
+        image: linuxserver/plex:latest
+        container_name: plex
+        network_mode: host
+        restart: unless-stopped
+        environment:
+            - PUID=${PUID}
+            - PGID=${PGID}
+            - TZ=Europe/Berlin
+            - VERSION=docker
+            - PLEX_CLAIM=${PLEX_CLAIM}
+        volumes:
+            - ./confdir:/config
+            - ./workdir:/transcode
+            - ${MEDIA_PATH}:/data:ro
+        devices:
+            - /dev/dri:/dev/dri
