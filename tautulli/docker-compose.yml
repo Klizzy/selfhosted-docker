@@ -1,15 +1,16 @@
-version: "2"
 services:
     tautulli:
-        image: linuxserver/tautulli
+        image: linuxserver/tautulli:latest
         container_name: tautulli
+        restart: unless-stopped
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         environment:
-            - PUID=1000
-            - PGID=1000
+            - PUID=${PUID}
+            - PGID=${PGID}
             - TZ=Europe/Berlin
         volumes:
             - ./confdir:/config
-            - /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Logs:/logs/:ro
+            - ../plex/confdir/Library/Application Support/Plex Media Server/Logs:/logs:ro
         ports:
             - 8181:8181
-        restart: unless-stopped
