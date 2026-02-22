@@ -1,14 +1,14 @@
-version: '3.7'
 services:
     jdownloader-vpn:
         container_name: jdownloader-vpn
         image: plusminus/jdownloader2-headless:alpine
         restart: unless-stopped
-        network_mode: "service:vpn"
+        network_mode: host
+#        network_mode: "service:vpn"  # uncomment for VPN usage
         stdin_open: true
         tty: true
-        depends_on:
-            - vpn
+#        depends_on:                   # only needed with VPN
+#            - vpn
         volumes:
             - "${DOWNLOAD_VOLUME_PATH}"
             - "${JDL_CONF_VOLUME_PATH}"
