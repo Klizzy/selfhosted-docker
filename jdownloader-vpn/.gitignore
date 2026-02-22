@@ -1,1 +1,5 @@
-staging/
+staging/*
+!staging/.gitkeep
+!staging/logs/
+staging/logs/*
+!staging/logs/.gitkeep
