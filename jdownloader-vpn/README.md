@@ -126,16 +126,21 @@ Two scripts handle marker creation. The `confdir/jd/` directory is gitignored, s
 Triggered when JD finishes extracting an archive successfully. Deletes the source archive files (.rar, .zip, etc.) to free NVMe space, then creates a `.ready_to_move` marker in the extraction folder.
 
 ```javascript
-// Delete archive source files to free NVMe space
-var archiveFiles = archive.getArchiveFiles();
-for (var i = 0; i < archiveFiles.length; i++) {
-    deleteFile(archiveFiles[i].getFilePath(), false);
-}
+disablePermissionChecks();
+try {
+    // Delete archive source files to free NVMe space
+    var archiveFiles = archive.getArchiveFiles();
+    for (var i = 0; i < archiveFiles.length; i++) {
+        deleteFile(archiveFiles[i].getFilePath(), false);
+    }
 
-// Create .ready_to_move marker in extraction folder
-var folder = archive.getFolder();
-writeFile(folder + "/.ready_to_move", "", false);
-log("Marker created: " + folder + "/.ready_to_move");
+    // Create .ready_to_move marker in extraction folder
+    var folder = archive.getFolder();
+    writeFile(folder + "/.ready_to_move", "", false);
+    log("Marker created: " + folder + "/.ready_to_move");
+} finally {
+    enablePermissionChecks();
+}
 ```
 
 #### ON_PACKAGE_FINISHED
@@ -143,21 +148,26 @@ log("Marker created: " + folder + "/.ready_to_move");
 Triggered when all links in a download package are complete. Checks if the package contains archive files — if yes, skips (handled by the extraction script above). For non-archive downloads (direct .mkv, .mp4, etc.): creates a `.ready_to_move` marker.
 
 ```javascript
-// Skip packages that contain archives (handled by ON_ARCHIVE_EXTRACTED)
-var links = package.getDownloadLinks();
-var archivePattern = /\.(rar|r\d{2,}|zip|7z|tar|gz|bz2|part\d+\.rar)$/i;
-var hasArchive = false;
-for (var i = 0; i < links.length; i++) {
-    if (archivePattern.test(links[i].getName())) {
-        hasArchive = true;
-        break;
+disablePermissionChecks();
+try {
+    // Skip packages that contain archives (handled by ON_ARCHIVE_EXTRACTED)
+    var links = package.getDownloadLinks();
+    var archivePattern = /\.(rar|r\d{2,}|zip|7z|tar|gz|bz2|part\d+\.rar)$/i;
+    var hasArchive = false;
+    for (var i = 0; i < links.length; i++) {
+        if (archivePattern.test(links[i].getName())) {
+            hasArchive = true;
+            break;
+        }
     }
-}
 
-if (!hasArchive) {
-    var folder = package.getDownloadFolder();
-    writeFile(folder + "/.ready_to_move", "", false);
-    log("Marker created: " + folder + "/.ready_to_move");
+    if (!hasArchive) {
+        var folder = package.getDownloadFolder();
+        writeFile(folder + "/.ready_to_move", "", false);
+        log("Marker created: " + folder + "/.ready_to_move");
+    }
+} finally {
+    enablePermissionChecks();
 }
 ```
 
