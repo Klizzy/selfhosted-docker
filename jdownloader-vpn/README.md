@@ -52,13 +52,7 @@ MIN_FREE_GB=10
 | `COOLDOWN_SECONDS` | Wait time after marker creation before moving (handles nested extractions) |
 | `MIN_FREE_GB` | Logs a warning when free disk space drops below this threshold |
 
-### 2. Create directories
-
-```bash
-mkdir -p staging/logs scripts
-```
-
-### 3. Start JDownloader
+### 2. Start JDownloader
 
 ```bash
 docker compose up -d jdownloader-vpn
@@ -66,7 +60,7 @@ docker compose up -d jdownloader-vpn
 
 On first start, configure your MyJDownloader credentials in the JD config or via the container logs.
 
-### 4. Enable Event Scripter in MyJDownloader
+### 3. Enable Event Scripter in MyJDownloader
 
 This step **must be done manually** — the config files alone are not enough.
 
@@ -81,7 +75,7 @@ You can verify the scripts are loaded under **Einstellungen > Event Scripter** �
 - `NVMe staging: mark extracted archive for move` (trigger: ON_ARCHIVE_EXTRACTED)
 - `NVMe staging: mark non-archive download for move` (trigger: ON_PACKAGE_FINISHED)
 
-### 5. Set up the mover cron job
+### 4. Set up the mover cron job
 
 ```bash
 chmod +x scripts/jd-mover.sh
@@ -273,7 +267,9 @@ jdownloader-vpn/
 │   └── vpn/                           # OpenVPN config (if using VPN mode)
 ├── scripts/
 │   └── jd-mover.sh                    # Cron job: staging -> NAS
-└── staging/                           # Local NVMe download dir (gitignored)
+└── staging/                           # Local NVMe download dir (contents gitignored)
+    ├── .gitkeep
     └── logs/
-        └── mover.log
+        ├── .gitkeep
+        └── mover.log                  # gitignored
 ```
