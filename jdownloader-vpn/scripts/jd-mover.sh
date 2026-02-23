@@ -67,6 +67,12 @@ move_package() {
         return 0
     fi
 
+    # Skip if JDownloader is still downloading into this directory (.part = active download)
+    if find "$pkg_dir" \( -name "*.part" -o -name "*.part[0-9]*" \) 2>/dev/null | grep -q .; then
+        log "SKIP: ${pkg_dir##*/} — .part files present (JD still downloading)"
+        return 0
+    fi
+
     # Preserve dir structure: staging/Filme/MovieName -> NAS_DIR/Filme/MovieName
     local rel="${pkg_dir#${STAGING_DIR}/}"
     local target="${NAS_DIR}/${rel}"
@@ -74,13 +80,21 @@ move_package() {
     log "MOVING: ${rel} -> ${target}"
     mkdir -p "$target"
 
-    if rsync -ah --remove-source-files \
+    local rsync_exit=0
+    rsync -ah --remove-source-files \
         --exclude=".ready_to_move" \
+        --exclude="*.rar" --exclude="*.r[0-9][0-9]" \
+        --exclude="*.zip" --exclude="*.7z" \
         --exclude="Sample/" --exclude="sample/" \
         --exclude="Samples/" --exclude="samples/" \
-        "$pkg_dir/" "$target/" 2>> "$LOG_FILE"; then
+        "$pkg_dir/" "$target/" 2>> "$LOG_FILE" || rsync_exit=$?
+
+    # Exit code 24 = some files vanished during transfer (normal when JD cleans up rars)
+    if [ "$rsync_exit" -eq 0 ] || [ "$rsync_exit" -eq 24 ]; then
         log "OK: ${rel}"
         rm -f "$marker"
+        # Delete leftover archive files that rsync excluded
+        find "$pkg_dir" \( -name "*.rar" -o -name "*.r[0-9][0-9]" -o -name "*.zip" -o -name "*.7z" \) -delete 2>/dev/null || true
         # Delete excluded sample dirs that rsync skipped (recursive search)
         while IFS= read -r -d '' d; do
             rm -rf "$d" && log "DELETED sample dir: ${d#${pkg_dir}/}"

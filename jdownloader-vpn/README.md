@@ -134,10 +134,13 @@ try {
         deleteFile(archiveFiles[i].getFilePath(), false);
     }
 
-    // Create .ready_to_move marker in extraction folder
+    // Create/reset .ready_to_move marker in extraction folder
+    // Delete first — writeFile() throws if file already exists (multiple packages in same dir)
     var folder = archive.getFolder();
-    writeFile(folder + "/.ready_to_move", "", false);
-    log("Marker created: " + folder + "/.ready_to_move");
+    var marker = folder + "/.ready_to_move";
+    deleteFile(marker, false);
+    writeFile(marker, "", false);
+    log("Marker created: " + marker);
 } finally {
     enablePermissionChecks();
 }
@@ -163,8 +166,10 @@ try {
 
     if (!hasArchive) {
         var folder = package.getDownloadFolder();
-        writeFile(folder + "/.ready_to_move", "", false);
-        log("Marker created: " + folder + "/.ready_to_move");
+        var marker = folder + "/.ready_to_move";
+        deleteFile(marker, false);
+        writeFile(marker, "", false);
+        log("Marker created: " + marker);
     }
 } finally {
     enablePermissionChecks();
