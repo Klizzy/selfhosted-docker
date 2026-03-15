@@ -2,8 +2,8 @@ version: '3'
 services:
     adguard-home:
         container_name: adguard-home
-        image: adguard/adguardhome
-        #restart: unless-stopped
+        image: adguard/adguardhome:latest
+        restart: unless-stopped
 
         volumes:
             - './workdir:/opt/adguardhome/work'
