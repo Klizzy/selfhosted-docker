@@ -9,6 +9,8 @@ services:
             - TZ=Europe/Berlin
             - APP_KEY=${APP_KEY}
             - SPEEDTEST_SCHEDULE=${SPEEDTEST_SCHEDULE}
+            - SPEEDTEST_SERVERS=${SPEEDTEST_SERVERS}
+            - SPEEDTEST_BLOCKED_SERVERS=${SPEEDTEST_BLOCKED_SERVERS}
             - DB_CONNECTION=sqlite
             - DISPLAY_TIMEZONE=Europe/Berlin
         volumes:
