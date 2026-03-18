@@ -50,7 +50,7 @@ fi
 rotate_log
 log "MOUNT MISSING: $MEDIA_PATH not mounted, attempting mount..."
 
-sudo mount "$MEDIA_PATH" || true
+sudo mount "$MEDIA_PATH" 2>> "$LOG_FILE" || true
 
 # Verify mount succeeded
 if mountpoint -q "$MEDIA_PATH" 2>/dev/null; then
