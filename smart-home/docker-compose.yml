@@ -1,0 +1,44 @@
+services:
+    mosquitto:
+        image: eclipse-mosquitto:2
+        container_name: mosquitto
+        restart: unless-stopped
+        ports:
+            - "1883:1883"
+        volumes:
+            - ./mosquitto/confdir:/mosquitto/config
+            - ./mosquitto/workdir:/mosquitto/data
+        environment:
+            - TZ=Europe/Berlin
+
+    zigbee2mqtt:
+        image: koenkk/zigbee2mqtt:latest
+        container_name: zigbee2mqtt
+        restart: unless-stopped
+        depends_on:
+            - mosquitto
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./zigbee2mqtt/confdir:/app/data
+            - /run/udev:/run/udev:ro
+        devices:
+            - ${ZIGBEE_DEVICE}:/dev/ttyACM0
+        environment:
+            - TZ=Europe/Berlin
+        group_add:
+            - dialout
+
+    homeassistant:
+        image: ghcr.io/home-assistant/home-assistant:stable
+        container_name: homeassistant
+        restart: unless-stopped
+        depends_on:
+            - mosquitto
+        network_mode: host
+        privileged: true
+        volumes:
+            - ./homeassistant/confdir:/config
+            - /etc/localtime:/etc/localtime:ro
+        environment:
+            - TZ=Europe/Berlin
