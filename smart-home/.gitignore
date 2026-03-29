@@ -1,0 +1,7 @@
+# Temp MQTT password files from initial setup
+.mqtt_*_pass
+
+# Backup script logs (also covered by scripts/logs/.gitignore)
+scripts/logs/*
+!scripts/logs/.gitkeep
+!scripts/logs/.gitignore
