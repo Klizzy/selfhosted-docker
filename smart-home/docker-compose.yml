@@ -1,4 +1,17 @@
 services:
+    network-check:
+        image: alpine:3
+        container_name: network-check
+        network_mode: host
+        command: ["sh", "-c", "tail -f /dev/null"]
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "ping -c 1 -W 2 ${GATEWAY_IP} || exit 1"]
+            interval: 5s
+            timeout: 3s
+            retries: 30
+            start_period: 5s
+
     mosquitto:
         image: eclipse-mosquitto:2
         container_name: mosquitto
@@ -10,13 +23,20 @@ services:
             - ./mosquitto/workdir:/mosquitto/data
         environment:
             - TZ=Europe/Berlin
+        healthcheck:
+            test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
 
     zigbee2mqtt:
         image: koenkk/zigbee2mqtt:latest
         container_name: zigbee2mqtt
         restart: unless-stopped
         depends_on:
-            - mosquitto
+            mosquitto:
+                condition: service_healthy
         ports:
             - "8080:8080"
         volumes:
@@ -28,13 +48,22 @@ services:
             - TZ=Europe/Berlin
         group_add:
             - dialout
+        healthcheck:
+            test: ["CMD-SHELL", "wget -q --spider http://localhost:8080 || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
 
     homeassistant:
         image: ghcr.io/home-assistant/home-assistant:stable
         container_name: homeassistant
         restart: unless-stopped
         depends_on:
-            - mosquitto
+            mosquitto:
+                condition: service_healthy
+            network-check:
+                condition: service_healthy
         network_mode: host
         privileged: true
         volumes:

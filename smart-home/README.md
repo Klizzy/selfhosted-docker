@@ -25,6 +25,7 @@ Centralized smart home control via Home Assistant with Zigbee device management 
 
 | Component      | Image                                          | Network  | Port            | Role                              |
 | -------------- | ---------------------------------------------- | -------- | --------------- | --------------------------------- |
+| Network Check  | `alpine:3`                                     | **host** | —               | Boot-time network readiness gate  |
 | Mosquitto      | `eclipse-mosquitto:2`                          | bridge   | 1883            | MQTT message broker               |
 | Zigbee2MQTT    | `koenkk/zigbee2mqtt:latest`                    | bridge   | 8080 (frontend) | Zigbee coordinator to MQTT bridge |
 | Home Assistant | `ghcr.io/home-assistant/home-assistant:stable` | **host** | 8123            | Smart home hub, HomeKit bridge    |
@@ -32,6 +33,10 @@ Centralized smart home control via Home Assistant with Zigbee device management 
 **Why host networking for HA:** HomeKit relies on mDNS (Bonjour) multicast which doesn't work through Docker's bridge NAT.
 
 **Why privileged for HA:** Needed for Bluetooth, USB device access, and some integrations. Can be tightened later.
+
+### Boot resilience
+
+After a power outage, the Pi may boot before the router is ready. The `network-check` sidecar pings the gateway (`GATEWAY_IP` from `.env`) until it responds. Home Assistant's `depends_on` blocks startup until this check passes, ensuring the HomeKit bridge (which relies on mDNS multicast) initializes on a working network. All services also have healthchecks for proper startup ordering and `docker compose ps` visibility.
 
 ## Prerequisites
 
@@ -55,9 +60,11 @@ Edit `.env`:
 PUID=1000
 PGID=1000
 ZIGBEE_DEVICE=/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_...-if00-port0
+GATEWAY_IP=192.168.68.1
 ```
 
-Find the device path with `ls -la /dev/serial/by-id/`. Always use `/dev/serial/by-id/` paths — never `/dev/ttyACM0` as that can change between reboots.
+- Find the device path with `ls -la /dev/serial/by-id/`. Always use `/dev/serial/by-id/` paths — never `/dev/ttyACM0` as that can change between reboots.
+- Set `GATEWAY_IP` to your router/gateway IP. Used by the `network-check` container to verify network reachability on boot.
 
 ### 2. Start Mosquitto and create MQTT users
 
