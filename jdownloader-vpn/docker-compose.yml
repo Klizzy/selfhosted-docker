@@ -4,6 +4,10 @@ services:
         image: plusminus/jdownloader2-headless:alpine
         restart: unless-stopped
         network_mode: host
+        deploy:
+            resources:
+                limits:
+                    memory: 1G
 #        network_mode: "service:vpn"  # uncomment for VPN usage
         stdin_open: true
         tty: true
