@@ -1,19 +1,22 @@
-version: '3.3'
 services:
     pihole:
         image: 'pihole/pihole:latest'
         container_name: pihole
         ports:
-            - '53:53/tcp'
-            - '53:53/udp'
-            - '8080:80'
-            - '444:443'
+            - '${DNS_PORT:-53}:53/tcp'
+            - '${DNS_PORT:-53}:53/udp'
+            - '${WEB_PORT:-8080}:80'
+            - '${HTTPS_PORT:-444}:443'
         environment:
-            - TZ=Europe/Berlin
+            TZ: ${TZ:-Europe/Berlin}
+            FTLCONF_webserver_api_password: ${FTLCONF_WEBSERVER_API_PASSWORD}
+            FTLCONF_dns_listeningMode: ${FTLCONF_DNS_LISTENING_MODE:-ALL}
         volumes:
             - './confdir/etc-pihole/:/etc/pihole/'
             - './confdir/etc-dnsmasq.d/:/etc/dnsmasq.d/'
         dns:
             - 127.0.0.1
             - 1.1.1.1
+        cap_add:
+            - NET_ADMIN
         restart: unless-stopped
