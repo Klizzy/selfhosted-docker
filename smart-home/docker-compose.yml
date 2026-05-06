@@ -32,6 +32,8 @@ services:
 
     zigbee2mqtt:
         image: koenkk/zigbee2mqtt:latest
+        entrypoint: ["/bin/sh", "/usr/local/bin/fix-multicast-table.sh"]
+        command: ["/sbin/tini", "--", "node", "index.js"]
         container_name: zigbee2mqtt
         restart: unless-stopped
         depends_on:
@@ -42,6 +44,7 @@ services:
         volumes:
             - ./zigbee2mqtt/confdir:/app/data
             - /run/udev:/run/udev:ro
+            - ./zigbee2mqtt/patches/fix-multicast-table.sh:/usr/local/bin/fix-multicast-table.sh:ro
         devices:
             - ${ZIGBEE_DEVICE}:/dev/ttyACM0
         environment:

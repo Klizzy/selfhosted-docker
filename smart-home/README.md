@@ -205,7 +205,9 @@ Key points:
 }
 ```
 
-Overrides the Ember coordinator's default multicast table limit (~16 slots). Without this, groups beyond the limit fall back from Zigbee multicast (single broadcast, all devices react simultaneously) to unicast (sequential per-device commands). Symptoms: `Failed to register group in multicast table with status=INVALID_STATE` errors in Z2M logs. Groups still work via unicast fallback, but multicast is faster. Set to 32 — safe for the EFR32MG24's 256KB RAM. Increase to 64 only if you exceed 30+ groups.
+Overrides the Ember coordinator's default multicast table limit. Without this, groups beyond the limit fall back from Zigbee multicast (single broadcast, all devices react simultaneously) to unicast (sequential per-device commands). Symptoms: `Failed to register group in multicast table with status=INVALID_STATE` errors in Z2M logs. Groups still work via unicast fallback, but multicast is faster. Set to 32 — safe for the EFR32MG24's 256KB RAM. Increase to 64 only if you exceed 30+ groups.
+
+**Important:** This config file alone is not sufficient. zigbee-herdsman's `ember` adapter (as of v10.0.5) loads this value and logs it at startup, but never sends it to the NCP firmware — the `emberSetEzspConfigValue()` call for `MULTICAST_TABLE_SIZE` is missing from `initEzsp()`. The NCP uses its compiled-in default (16 on EFR32MG24, 8 on EFR32MG21). The startup patch at `zigbee2mqtt/patches/fix-multicast-table.sh` fixes this by adding the missing call at container start. See the "Multicast table patch" section below for details.
 
 **File:** `zigbee2mqtt/confdir/secret.yaml`
 
@@ -323,6 +325,37 @@ docker compose up -d
 # Verify: HA :8123, Z2M :8080, devices reporting
 ```
 
+## Multicast table patch
+
+**File:** `zigbee2mqtt/patches/fix-multicast-table.sh`
+
+The zigbee-herdsman `ember` adapter has a bug where `MULTICAST_TABLE_SIZE` from `stack_config.json` is loaded and logged at startup but never sent to the NCP firmware. The old `ezsp` adapter handled this correctly; the `ember` rewrite dropped the `setEzspConfigValue()` call for this config ID while keeping all the surrounding infrastructure (enum, config key, validation, logging). The NCP falls back to its compiled-in default, which is too small for setups with many Zigbee groups.
+
+The patch script runs at container start (via docker-compose entrypoint override) and adds the missing call to `emberAdapter.js`:
+
+```javascript
+await this.emberSetEzspConfigValue(
+    enums_2.EzspConfigId.MULTICAST_TABLE_SIZE,
+    this.stackConfig.MULTICAST_TABLE_SIZE || 16
+);
+```
+
+The script is **idempotent** — it checks whether the patch is already present before applying, and skips if upstream fixes the bug in a future zigbee-herdsman release. It searches for `emberAdapter.js` by filename (not by version-specific path), so it works across zigbee-herdsman updates as long as the file exists and contains the expected code pattern.
+
+**docker-compose.yml integration:**
+
+```yaml
+zigbee2mqtt:
+    entrypoint: ["/bin/sh", "/usr/local/bin/fix-multicast-table.sh"]
+    command: ["/sbin/tini", "--", "node", "index.js"]
+    volumes:
+      - ./zigbee2mqtt/patches/fix-multicast-table.sh:/usr/local/bin/fix-multicast-table.sh:ro
+```
+
+**Hardware note:** This patch works on EFR32MG24 (256KB RAM) which can accommodate 32+ multicast entries. On EFR32MG21 (64KB RAM, used in Sonoff Dongle-E and SkyConnect), the NCP may reject the value with `ERROR_OUT_OF_MEMORY` — those devices need custom firmware with a larger `EMBER_MULTICAST_TABLE_SIZE` compiled in.
+
+**Related:** GitHub issues [#28297](https://github.com/Koenkk/zigbee2mqtt/issues/28297), [#29315](https://github.com/Koenkk/zigbee2mqtt/issues/29315), [#28522](https://github.com/Koenkk/zigbee2mqtt/issues/28522).
+
 ## Updating
 
 ```bash
@@ -330,6 +363,23 @@ docker compose pull && docker compose up -d
 ```
 
 Always check Z2M and HA release notes before major version updates.
+
+### Post-update: verify multicast patch
+
+After updating the Z2M image, verify the startup patch still applies:
+
+```bash
+# Check patch log
+docker compose logs zigbee2mqtt 2>&1 | grep "z2m-patch"
+# Expected: "[z2m-patch] Applied MULTICAST_TABLE_SIZE patch to ..."
+# Bad:      "[z2m-patch] WARNING: Patch failed to apply"
+
+# Check for multicast errors (wait ~5 minutes for groups to be used)
+docker compose logs zigbee2mqtt --tail 200 2>&1 | grep -c "INVALID_STATE"
+# Expected: 0
+```
+
+If the patch fails after an update, zigbee-herdsman's code structure may have changed. Check if upstream fixed the bug: `docker exec zigbee2mqtt sh -c "grep -r 'EzspConfigId.MULTICAST_TABLE_SIZE' /app/node_modules/zigbee-herdsman/dist/adapter/ember/"`. If it returns a match in the unpatched code, the bug is fixed and the patch is no longer needed. If not, find the new insertion point near `registerFixedEndpoints()` in `emberAdapter.js` and update the `sed` pattern in the patch script.
 
 ## File overview
 
@@ -355,6 +405,8 @@ smart-home/
 │   │   ├── .gitkeep
 │   │   ├── configuration.yaml
 │   │   └── secret.yaml
+│   ├── patches/
+│   │   └── fix-multicast-table.sh  # Startup patch for multicast table bug
 │   └── workdir/                  # gitignored — unused (Z2M data in confdir)
 │       └── .gitkeep
 └── homeassistant/
