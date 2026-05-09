@@ -6,6 +6,7 @@
 .claude
 CONTEXT.md
 CLAUDE.md
+CHANGELOG.MD
 .mcp.json
 scripts/
 docs/
