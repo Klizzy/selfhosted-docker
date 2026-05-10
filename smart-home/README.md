@@ -34,6 +34,8 @@ Centralized smart home control via Home Assistant with Zigbee device management 
 
 **Why privileged for HA:** Needed for Bluetooth, USB device access, and some integrations. Can be tightened later.
 
+**Why `stop_grace_period: 60s` for HA:** Docker's default is 10s before SIGKILL. HA's recorder flush takes ~20s (growing with DB size), so the default risks a dirty shutdown on `sudo reboot` / `shutdown`. 60s is a max threshold — HA exits as soon as it's done, no fixed wait.
+
 ### Boot resilience
 
 After a power outage, the Pi may boot before the router is ready. The `network-check` sidecar pings the gateway (`GATEWAY_IP` from `.env`) until it responds. Home Assistant's `depends_on` blocks startup until this check passes, ensuring the HomeKit bridge (which relies on mDNS multicast) initializes on a working network. All services also have healthchecks for proper startup ordering and `docker compose ps` visibility.
@@ -263,7 +265,7 @@ Runs weekly via cron (Sunday 4 AM). Creates timestamped tar.gz snapshots on the 
 **How it works:**
 
 1. Checks NAS mount is writable (fails early if unreachable)
-2. Stops Home Assistant (~10-15s) for consistent SQLite checkpoint
+2. Stops Home Assistant (~20s, `stop_grace_period: 60s`) for consistent SQLite checkpoint
 3. Creates `smart-home-backup-YYYYMMDD-HHMMSS.tar.gz` on NAS
 4. Restarts Home Assistant (also guaranteed by EXIT trap on failure)
 5. Validates the archive and cleans up old backups
