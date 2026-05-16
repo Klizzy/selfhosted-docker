@@ -1,0 +1,17 @@
+services:
+    glances:
+        image: nicolargo/glances:latest
+        container_name: glances
+        restart: unless-stopped
+        pid: host
+        network_mode: host
+        environment:
+            - TZ=Europe/Berlin
+            - GLANCES_OPT=-w --disable-process
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /etc/os-release:/etc/os-release:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
